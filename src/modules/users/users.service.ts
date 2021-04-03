@@ -21,6 +21,14 @@ export class UsersService {
     });
   }
 
+  findById(id: string): Promise<Users> {
+    return this.usersRepository.findOne({
+      where: {
+        id
+      }
+    });
+  }
+
   create(data: RegisterDto): Promise<Users> {
     return this.usersRepository
       .findOne({

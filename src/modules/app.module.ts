@@ -8,6 +8,9 @@ import { ConfigModule } from "@nestjs/config";
 import { Users } from "./users/entities/user.entity";
 import { AuthService } from "./auth/auth.service";
 import { UsersService } from "./users/users.service";
+import { FavoriteModule } from './Favorite/favorite.module';
+import { FavoriteService } from "./Favorite/favorite.service";
+import { Favorite } from "./Favorite/entities/favorite.entity";
 
 @Module({
   imports: [
@@ -19,14 +22,15 @@ import { UsersService } from "./users/users.service";
       username: process.env.APP_DBUSERNAME,
       password: process.env.APP_DBPASSWORD,
       database: process.env.APP_DBNAME,
-      entities: [Users],
+      entities: [Users, Favorite],
       synchronize: false
     }),
     AuthModule,
-    UsersModule
+    UsersModule,
+    FavoriteModule
   ],
   controllers: [AppController],
-  providers: [AppService, AuthService, UsersService]
+  providers: [AppService, AuthService, UsersService, FavoriteService]
 })
 export class AppModule {
 }

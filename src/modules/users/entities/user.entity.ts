@@ -16,12 +16,9 @@ export class Users {
   password: string;
 
   @Column()
-  create_At: Date;
+  created_At: Date;
 
   @Column()
   update_At: Date;
-
-  @Column()
-  deleted_At: Date;
 
 }
