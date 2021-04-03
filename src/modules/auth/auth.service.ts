@@ -1,26 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthInput } from './dto/create-auth.input';
-import { UpdateAuthInput } from './dto/update-auth.input';
+import { Injectable } from "@nestjs/common";
+import { UsersService } from "../users/users.service";
+import { isMatch } from "../util/bcrypt";
+import { LoginDto } from "./dto/LoginDto";
+import { JwtService } from "@nestjs/jwt";
 
 @Injectable()
 export class AuthService {
-  create(createAuthInput: CreateAuthInput) {
-    return 'This action adds a new auth';
+  constructor(
+    private usersServices: UsersService,
+    private jwtServices: JwtService
+  ) {
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async ValidateUser(username: string, password: string): Promise<any> {
+    const user = await this.usersServices.findByEmail(username);
+    if (user && isMatch(password, user.password)) {
+      const { password, ...result } = user;
+      return result;
+    }
+    return null;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  async login(loginDto: LoginDto) {
+    const user = await this.usersServices.findByEmail(loginDto.email);
+    const payload = { ...user, password: undefined };
+    return {
+      access_token: this.jwtServices.sign(payload)
+    };
   }
 
-  update(id: number, updateAuthInput: UpdateAuthInput) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
 }

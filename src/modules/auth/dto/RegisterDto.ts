@@ -1,8 +1,18 @@
-import { CreateAuthInput } from './create-auth.input';
-import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
+import { IsEmail, IsPhoneNumber, IsString } from 'class-validator';
 
-@InputType()
-export class UpdateAuthInput extends PartialType(CreateAuthInput) {
-  @Field(() => Int)
-  id: number;
+export class RegisterDto {
+  @IsString()
+  first_name: string;
+
+  @IsString()
+  last_name: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsPhoneNumber()
+  phone: string;
+
+  @IsString()
+  password: string;
 }
