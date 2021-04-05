@@ -1,20 +1,24 @@
-import React, {FunctionComponent, useEffect, useState} from "react";
+import React, {FunctionComponent, useState} from 'react';
 import {Button, Card, Form, Image, Input, Spin, Typography} from "antd";
-import * as yup from "yup";
-import {setLocale} from "yup";
-import {yupResolver} from "@hookform/resolvers/yup";
 import {Controller, useForm} from "react-hook-form";
 import axios from "axios";
+import {setLocale} from "yup";
 import {useRouter} from "next/router";
+import * as yup from "yup";
+import {yupResolver} from "@hookform/resolvers/yup";
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
 
 const {Text} = Typography;
+const MyAlerts = withReactContent(Swal)
 
-export interface LoginValues {
+export interface RegisterValue {
+    first_name: string;
     email: string;
     password: string;
 }
 
-const Index: FunctionComponent = () => {
+const index: FunctionComponent = () => {
     setLocale({
         mixed: {
             required: "El campo es requerido"
@@ -28,38 +32,48 @@ const Index: FunctionComponent = () => {
     const [error, setErrors] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const validationSchema = yup.object().shape({
+        first_name: yup.string().required(),
         email: yup.string().required(),
         password: yup
             .string()
             .required()
     });
 
-    const {control, formState: {errors}, setError, handleSubmit} = useForm<LoginValues>({
+    const {control, formState: {errors}, setError, handleSubmit} = useForm<RegisterValue>({
         resolver: yupResolver(validationSchema),
         defaultValues: {
+            first_name: "",
             email: "",
             password: ""
         }
     });
 
-    const onSubmit = (data: LoginValues) => {
-        setLoading(true);
-        axios.post(process.env.NEXT_PUBLIC_URL + "/auth/login", data)
-            .then((response) => {
-                localStorage.setItem("token", response.data.access_token);
-                route.push("/Dashboard");
-            })
-            .catch((error) => {
-                setErrors(error?.response?.data?.message);
-            }).finally(() => setLoading(false));
+    const onSubmit = (data: RegisterValue) => {
+        if (window !== undefined) {
+            setLoading(true);
+            axios
+                .post(process.env.NEXT_PUBLIC_URL + "auth/register", data)
+                .then((response) => {
+                    MyAlerts.fire({
+                        title: 'Se ha registrado exitosamente',
+                        footer: 'Copyright 2021',
+
+                    }).then(() => {
+                        route.push("/");
+                    })
+                })
+                .catch((error) => {
+                    MyAlerts.fire({
+                        title: 'Hubo un error intente mas tarde!',
+                        footer: 'Copyright 2021',
+
+                    }).then(() => {
+                        return;
+                    })
+                    setErrors(error?.response?.data?.message);
+                }).finally(() => setLoading(false));
+        }
     };
-
-    useEffect(() => {
-        document.title = "Iniciar Sesión"
-        localStorage.getItem("token") && route.push("/dashboard");
-    }, []);
-
-    console.log(errors)
 
     return (
         <div
@@ -93,6 +107,14 @@ const Index: FunctionComponent = () => {
                     />
                 </div>
                 <Form onFinish={handleSubmit(onSubmit)} layout={"vertical"}>
+                    <Form.Item label="Nombre del usuario">
+                        <Controller render={({
+                                                 field: {onChange, value},
+                                             }) => (
+                            <Input onChange={onChange} value={value}/>
+                        )} control={control} name={'first_name'}/>
+                        {errors?.first_name && <Text type="danger">{errors.first_name.message}</Text>}
+                    </Form.Item>
                     <Form.Item label="Correo electrónico">
                         <Controller render={({
                                                  field: {onChange, value},
@@ -115,20 +137,21 @@ const Index: FunctionComponent = () => {
                                 <Spin/> :
                                 <>
                                     <Button type="primary" disabled={loading} htmlType="submit">
-                                        Iniciar sesión
+                                        Registrarme
                                     </Button>
                                     <br/>
                                     <Text type={"danger"}>{error}</Text>
                                 </>
                         }
-                        <Button style={{marginTop: "10px"}} type="link" onClick={() => route.push('/Register')}>
-                            Registrarme
+                        <Button style={{marginTop: "10px"}} type="link" onClick={() => route.push('/')}>
+                            Iniciar Sesion
                         </Button>
                     </Form.Item>
                 </Form>
             </Card>
         </div>
-    );
-};
+    )
 
-export default Index;
+}
+
+export default index;
